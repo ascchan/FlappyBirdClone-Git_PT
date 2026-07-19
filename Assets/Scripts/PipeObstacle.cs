@@ -9,7 +9,7 @@ public class PipeObstacle : MonoBehaviour
     void Start()
     {
         transform.position = new Vector3(transform.position.x, Random.Range(-upRange, upRange), 0);
-        //Destroy(gameObject, 5f);
+        Destroy(gameObject, 11f);
     }
 
     // Update is called once per frame

@@ -66,6 +66,7 @@ public class BirdController : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
+        GameManager.currentScore++;
         //add score points
         //play sound
 
