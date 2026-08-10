@@ -52,16 +52,14 @@ public class BirdController : MonoBehaviour
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
+        FindAnyObjectByType<GameManager>().EndGame();
+        gameObject.SetActive(false);
+        
         //disable input
         //play sound
         //show game over screen
         //register score
 
-        /*
-        if (collision.gameObject.CompareTag("Obstacle"))
-        {
-            Debug.Log("Game Over");
-        }*/
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
@@ -69,12 +67,6 @@ public class BirdController : MonoBehaviour
         GameManager.currentScore++;
         //add score points
         //play sound
-
-        /*
-        if (collision.gameObject.CompareTag("ScoreZone"))
-        {
-            Debug.Log("Score!");
-        }*/
 
     }
 

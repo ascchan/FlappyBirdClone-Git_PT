@@ -1,36 +1,89 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Networking;
+using System.Collections.Generic;
+using System.Linq;
 
 public class APITest : MonoBehaviour
 {
-    public string websiteUrl;
-    public string titleParameter;
-    public int pageParameter;
+    private const string apiUrl = "https://myflappybird-71f1b-default-rtdb.firebaseio.com/";
+    private const string allScoresAddress = "scores/.json";
 
-    public ChuckNorrisJoke randomJoke;
+    public string userName;
+    public int highestScoreOnDatabase;
+
+    public List<UserLeaderboardEntry> leaderboard = new List<UserLeaderboardEntry>();
 
     void Start()
     {
-        StartCoroutine(LoadWebPage());
+        StartCoroutine( LoadCurrentUserScore() );
+        DisplayLeaderboard();
     }
 
-    IEnumerator LoadWebPage()
+    IEnumerator LoadCurrentUserScore()
     {
-        UnityWebRequest request = UnityWebRequest.Get(websiteUrl + "&s=" + titleParameter + "&page=" + pageParameter.ToString());
+        UnityWebRequest request = UnityWebRequest.Get(apiUrl + "scores/" + userName + ".json");
+
+        yield return request.SendWebRequest();
+        int.TryParse(request.downloadHandler.text, out highestScoreOnDatabase);
+    }
+
+    public void RegisterHighScore(int score)
+    {
+        if(GameManager.currentScore > highestScoreOnDatabase)
+        {
+            StartCoroutine( RegisterHighScoreCoroutine(score) );
+            DisplayLeaderboard();
+        }
+    }
+
+    IEnumerator RegisterHighScoreCoroutine(int score)
+    {
+        UnityWebRequest request = UnityWebRequest.Put( apiUrl + "scores/" + userName + ".json", GameManager.currentScore.ToString() );
+
+        yield return request.SendWebRequest();
+        
+        Debug.Log("High score registered successfully!" + request.downloadHandler.text );
+    }
+
+    public void DisplayLeaderboard()
+    {
+        StartCoroutine( DownloadLeaderboardCoroutine() );
+    }
+
+    IEnumerator DownloadLeaderboardCoroutine()
+    {
+        UnityWebRequest request = UnityWebRequest.Get(apiUrl + allScoresAddress);
 
         yield return request.SendWebRequest();
 
-        //randomJoke = JsonUtility.FromJson<ChuckNorrisJoke>(request.downloadHandler.text);
-        //Debug.Log(randomJoke.value);
-        Debug.Log(request.downloadHandler.text);
+        string cleanText = request.downloadHandler.text;
+        cleanText = cleanText.Replace("}", "");
+        cleanText = cleanText.Replace("{", "");
+        cleanText = cleanText.Replace('"', ' ');
+        cleanText = cleanText.Replace(" ", "");
+        
+        string[] entries = cleanText.Split(',');
+
+        foreach(string entry in entries)
+        {
+            string[] userAndScore = entry.Split(':');
+
+            UserLeaderboardEntry newLeaderboardEntry = new UserLeaderboardEntry();
+            
+            newLeaderboardEntry.leaderboardName = userAndScore[0];
+            newLeaderboardEntry.userScore = int.Parse(userAndScore[1]);
+
+            leaderboard.Add(newLeaderboardEntry);
+       }
+
+       leaderboard = leaderboard.OrderByDescending(x => x.userScore).ToList();
     }
 }
 
-[System.Serializable]
-public class ChuckNorrisJoke
+[System.Serializable] 
+public class UserLeaderboardEntry
 {
-    public string value;
-    public string id;
-    public string created_at;
+    public string leaderboardName;
+    public int userScore;
 }
