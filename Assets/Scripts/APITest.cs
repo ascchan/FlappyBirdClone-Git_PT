@@ -6,6 +6,7 @@ using System.Linq;
 
 public class APITest : MonoBehaviour
 {
+
     private const string apiUrl = "https://myflappybird-71f1b-default-rtdb.firebaseio.com/";
     private const string allScoresAddress = "scores/.json";
 
@@ -13,6 +14,9 @@ public class APITest : MonoBehaviour
     public int highestScoreOnDatabase;
 
     public List<UserLeaderboardEntry> leaderboard = new List<UserLeaderboardEntry>();
+    
+    [SerializeField] private UIScoreEntry scoreEntryPrefab;
+    [SerializeField] private Transform contentParent;
 
     void Start()
     {
@@ -58,6 +62,7 @@ public class APITest : MonoBehaviour
         yield return request.SendWebRequest();
 
         string cleanText = request.downloadHandler.text;
+
         cleanText = cleanText.Replace("}", "");
         cleanText = cleanText.Replace("{", "");
         cleanText = cleanText.Replace('"', ' ');
@@ -68,16 +73,28 @@ public class APITest : MonoBehaviour
         foreach(string entry in entries)
         {
             string[] userAndScore = entry.Split(':');
-
-            UserLeaderboardEntry newLeaderboardEntry = new UserLeaderboardEntry();
+            if(userAndScore.Length == 2)
+            {
+                UserLeaderboardEntry newLeaderboardEntry = new UserLeaderboardEntry();
             
-            newLeaderboardEntry.leaderboardName = userAndScore[0];
-            newLeaderboardEntry.userScore = int.Parse(userAndScore[1]);
+                newLeaderboardEntry.leaderboardName = userAndScore[0];
+                //newLeaderboardEntry.userScore = int.Parse(userAndScore[1]);
+                int.TryParse(userAndScore[1], out newLeaderboardEntry.userScore);
 
-            leaderboard.Add(newLeaderboardEntry);
-       }
+                leaderboard.Add(newLeaderboardEntry);
+            }
+
+        }
 
        leaderboard = leaderboard.OrderByDescending(x => x.userScore).ToList();
+       //using System.Linq; is required for the OrderByDescending method to work
+
+       foreach(UserLeaderboardEntry entry in leaderboard)
+        {
+            UIScoreEntry entryClone = Instantiate(scoreEntryPrefab, contentParent);
+            entryClone.userNameText.text = entry.leaderboardName;
+            entryClone.scoreText.text = entry.userScore.ToString();
+        }
     }
 }
 

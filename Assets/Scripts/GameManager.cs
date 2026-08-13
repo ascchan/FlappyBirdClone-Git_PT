@@ -14,8 +14,12 @@ public class GameManager : MonoBehaviour
     [SerializeField] private GameObject gameOverScreen;
     [SerializeField] private APITest api;
 
-    void Start()
+    [SerializeField] private Rigidbody2D birdRigidbody;
+
+    public void StartGame()
     {
+        birdRigidbody.constraints = RigidbodyConstraints2D.None;
+        
         InvokeRepeating("SpawnPipes", 1f, ObstacleSpawnRate);
     }
 
