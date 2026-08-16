@@ -18,7 +18,7 @@ public class APITest : MonoBehaviour
     [SerializeField] private UIScoreEntry scoreEntryPrefab;
     [SerializeField] private Transform contentParent;
 
-    void Start()
+    public void StartDB()
     {
         StartCoroutine( LoadCurrentUserScore() );
         DisplayLeaderboard();
@@ -27,6 +27,7 @@ public class APITest : MonoBehaviour
     IEnumerator LoadCurrentUserScore()
     {
         UnityWebRequest request = UnityWebRequest.Get(apiUrl + "scores/" + userName + ".json");
+        Debug.Log("Loading current user score for: " + userName);
 
         yield return request.SendWebRequest();
         int.TryParse(request.downloadHandler.text, out highestScoreOnDatabase);
@@ -96,6 +97,18 @@ public class APITest : MonoBehaviour
             entryClone.scoreText.text = entry.userScore.ToString();
         }
     }
+
+    public void SetUserName(string name)
+    {
+        userName = name;
+        Debug.Log("User name set to: " + userName);
+    }
+
+    public string GetUserName()
+    {
+        return userName;
+    }
+
 }
 
 [System.Serializable] 
